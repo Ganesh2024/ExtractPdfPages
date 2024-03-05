@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom'
 
 export const PageNotFound = ()=> {
   const navigate = useNavigate();
-  useEffect(() => {   
-    navigate('/login');
-  }, [])
+  // useE1ffect(() => {   
+  // }, [])
+  navigate('/login');
   
   return (
     <div>
