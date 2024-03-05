@@ -5,7 +5,7 @@ import "./Register.css"
 
 export const Register=()=> {
   const navigate = useNavigate();
-  const url = "http://localhost:8000";
+  const url = "https://extractpdfpages.onrender.com";
   const handleSubmit = async (e)=>{
     try {
       e.preventDefault();

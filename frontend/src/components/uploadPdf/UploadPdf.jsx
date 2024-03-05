@@ -18,7 +18,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 
 
 
-const url = "http://localhost:8000";
+const url = "https://extractpdfpages.onrender.com";
 
 export const UploadPdf = () => {
   
