@@ -38,7 +38,7 @@ export const Register=()=> {
       }
 
       alert(data.msg);
-      console.log("in register",data.msg);
+      // console.log("in register",data.msg);
     } catch (err) {
       console.log(err); 
     }

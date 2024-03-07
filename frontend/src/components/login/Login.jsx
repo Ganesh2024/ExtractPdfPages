@@ -24,7 +24,7 @@ export const  Login = ()=> {
       }
 
       const {data} = await axios.post(url+"/login",userData);
-      console.log(data.user._id);
+      // console.log(data.user._id);
 
       if(data.status==200){
         localStorage.setItem("userId",JSON.stringify({userId:data.user._id}));
@@ -33,7 +33,7 @@ export const  Login = ()=> {
       }
 
       alert(data.msg);
-      console.log(data);
+      // console.log(data);
     } catch (err) {
       console.log(err);
     }

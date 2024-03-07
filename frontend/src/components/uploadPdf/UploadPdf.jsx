@@ -66,14 +66,14 @@ export const UploadPdf = () => {
     const formData = new FormData();
     formData.append("title", title);
     formData.append("userId", userId.userId);
-    console.log("userID",userId)
-    console.log(file);
+    // console.log("userID",userId)
+    // console.log(file);
   
     try {
       // Generate a unique identifier for the file (e.g., using Date.now())
       const uniqueIdentifier = Date.now();
       const name = `${uniqueIdentifier}-${file.name}`;
-      console.log("frontend name",name);
+      // console.log("frontend name",name);
 
       const storageRef = firebase.storage().ref();
       const fileRef = storageRef.child(name);
@@ -81,7 +81,7 @@ export const UploadPdf = () => {
       const snapshot = await fileRef.put(file);
       const downloadURL = await snapshot.ref.getDownloadURL();
 
-      console.log("downloadURL",downloadURL)
+      // console.log("downloadURL",downloadURL)
   
       formData.append("name",name);
       formData.append("downloadURL", downloadURL);
@@ -92,7 +92,7 @@ export const UploadPdf = () => {
           "Content-Type": "multipart/form-data",
         }
       });
-      console.log(data);
+      // console.log(data);
   
       if (data.status === 200) {
         alert("Uploaded Successfully!!!");
@@ -109,7 +109,7 @@ export const UploadPdf = () => {
 
   const showPdf = (downloadURL) => { //downloadURL
     setSelecNums([]);
-    console.log("ssss",selecNums)
+    // console.log("ssss",selecNums)
     setOpenPdf(downloadURL); //setOpenPdf(downloadURL)
   };
 
@@ -131,15 +131,15 @@ export const UploadPdf = () => {
       });
       const pdfSrcDoc = await PDFDocument.load(pdfArrayBuffer.data);
       const pdfNewDoc = await PDFDocument.create();
-      const pagesToExtract = selecNums.map((pageNum) => pageNum - 1); // Adjust for 0-based indexing
+      const pagesToExtract = selecNums.map((pageNum) => pageNum - 1); 
 
       const pages = await pdfNewDoc.copyPages(pdfSrcDoc, pagesToExtract);
       pages.forEach((page) => pdfNewDoc.addPage(page));
       const newpdf = await pdfNewDoc.save();
-      return newpdf; // Return the new PDF data
+      return newpdf; 
     } catch (error) {
       console.error("Error in extractSelectedPages function:", error);
-      throw error; // Rethrow the error to be caught in handleExtract
+      throw error; 
     }
   }
 
