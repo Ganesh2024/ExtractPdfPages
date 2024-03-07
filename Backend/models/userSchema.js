@@ -8,8 +8,9 @@ const userSchema = new Schema(
     password: { type: String, required: true,},
     token: { type: String },
     files:[{
-      filename: String,
+      name: String, //change to name
       title: String,
+      downloadURL : String,
     }]
   }, 
   { timestamps: true }

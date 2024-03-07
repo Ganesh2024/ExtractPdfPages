@@ -6,6 +6,8 @@ import axios from "axios";
 export const  Login = ()=> {
   const navigate = useNavigate();
   const url = "https://extractpdfpages.onrender.com";
+  // const url = "http://localhost:8000";
+  
   const handleSubmit = async (e)=>{
     try {
       e.preventDefault(); //to stop refreshing page
@@ -43,7 +45,7 @@ export const  Login = ()=> {
         <form className='loginForm' onSubmit={handleSubmit}>
           <input type='email' placeholder='Enter email' id='email' name='email'
           style={{
-            "border-radius": "0.3rem",
+            "borderRadius": "0.3rem",
           }}></input>
 
           <input type='password' placeholder='Enter password' id='password' name='password'

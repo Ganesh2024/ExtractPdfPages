@@ -1,11 +1,15 @@
+
+
 const express = require('express');
 const cors = require("cors");
 const connect = require("./config/db");
 require("dotenv").config();
 const { User } = require("./models/userSchema");
-const {login,register} = require("./controllers/controller");
-const multer = require("multer");
+const { login, register } = require("./controllers/controller");
 const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const multer = require("multer");
+
 const app = express();
 
 const PORT = process.env.PORT || 5000;
@@ -14,34 +18,24 @@ app.use(cors());
 
 connect();
 
-app.use("/files", express.static("files"));
 app.use(express.json());
 
-app.post("/login",login);
-app.post("/register",register);
+app.post("/login", login);
+app.post("/register", register);
 
-
-const pdfstorage = multer.diskStorage({
-  destination: function(req,file,cb){
-    cb(null,"./files");
-  },
-  filename: function(req,file,cb){
-    cb(null,Date.now()+ "-" + file.originalname);
-  }
-})
+const pdfstorage = multer.memoryStorage();
 
 const upload = multer({
   storage: pdfstorage,
   fileFilter(req, file, cb) {
-    if (!file.originalname.match(/\.(pdf)$/)) { 
-      // upload only png and jpg format
-      return cb(new Error('Please upload a Image'))
+    if (!file.originalname.match(/\.(pdf)$/)) {
+      return cb(new Error('Please upload a PDF file'));
     }
-    cb(undefined, true)
+    cb(null, true);
   }
-});
+}).single("file");
 
-app.post("/pdfList",async (req,res)=>{
+app.post("/pdfList", async (req, res) => {
   try {
     const userId = req.body.userId;
     if (!mongoose.isValidObjectId(userId)) {
@@ -56,57 +50,57 @@ app.post("/pdfList",async (req,res)=>{
     res.send({
       msg: "sent all files",
       status: 200,
-      files : olduser.files,
+      files: olduser.files,
     });
 
   } catch (err) {
     console.log(err);
   }
-})
+});
 
-app.post("/uploadPdf", upload.single("file"), async (req, res) => {
+app.post("/uploadPdf", async (req, res) => {
   try {
-    const title = req.body.title;
-    const filename = req.file.filename;
-    const userId = req.body.userId;
+    upload(req, res, async (err) => {
+      if (err) {
+        return res.status(400).send({ error: err.message });
+      }
 
-    // Validate userId
-    if (!mongoose.isValidObjectId(userId)) {
-      return res.status(400).send({ error: 'Invalid userId' });
-    }
+      const userId = req.body.userId;
+      const title = req.body.title;
+      const name = req.body.name;
+      const downloadURL = req.body.downloadURL;
 
-    const olduser = await User.findById(userId);
-    if (!olduser) {
-      return res.status(404).send({ error: 'User not found' });
-    }
 
-    olduser.files.push({
-      filename: filename,
-      title: title
-    });
+      if (!mongoose.isValidObjectId(userId)) {
+        return res.status(400).send({ error: 'Invalid userId' });
+      }
 
-    await olduser.save();
-    res.send({
-      msg: "File uploaded successfully",
-      status: 200,
-      filename: filename,
+      const olduser = await User.findById(userId);
+      if (!olduser) {
+        return res.status(404).send({ error: 'User not found' });
+      }
+
+      olduser.files.push({
+        name: name,
+        title: title,
+        downloadURL: downloadURL,
+      });
+
+      // console.log(olduser.files);
+
+      await olduser.save();
+      res.send({
+        msg: "File uploaded successfully",
+        status: 200,
+        name: name,
+        downloadURL: downloadURL,
+      });
     });
   } catch (err) {
+    console.log(err);
     res.status(500).send({ error: err.message });
   }
 });
-
-app.get("/getFiles", async (req, res) => {
-  try {
-    const userId = req.query.userId; 
-    const files = await User.findById(userId).select("files"); 
-    res.send({ status: 200, files: files });
-
-  } catch (err) {
-    console.log(err);
-  }
-});
-
 
 app.get("/", (req, res) => {
   res.send({ status: 400, msg: "success" });

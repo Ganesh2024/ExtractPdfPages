@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { PDFDocument } from "pdf-lib";
 import { pdfjs } from "react-pdf";
-// import {ExtractPdf} from "./ExtractPdf"
+import firebase from "firebase/compat/app";
+import "firebase/compat/storage";
 import "./UploadPdf.css";
 import {PdfComp} from "./PdfComp";
 import { useNavigate } from "react-router-dom";
@@ -12,13 +13,14 @@ import { useNavigate } from "react-router-dom";
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.js",
   import.meta.url
-).toString();
+).toString(); 
 
 
 
 
 
 const url = "https://extractpdfpages.onrender.com";
+// const url = "http://localhost:8000";
 
 export const UploadPdf = () => {
   
@@ -28,7 +30,7 @@ export const UploadPdf = () => {
   ? JSON.parse(localStorage.getItem("userId"))
   : null;
 
-  if(userId===null){
+  if(userId===null){ //should i use useEffect()
     navigate("/register");
   }
 
@@ -44,37 +46,71 @@ export const UploadPdf = () => {
   }, []);
 
   const getPdfs = async () => {
-    const { data } = await axios.post(url + "/pdfList", userId);
-    // console.log("3.in getPdfs",data.files);
-    setPdfFiles(data.files);
+    try {
+      const { data } = await axios.post(url + "/pdfList", userId);
+      // console.log("3.in getPdfs",data.files);
+      setPdfFiles(data.files);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const submitPdf = async (e) => {
     e.preventDefault();
+  
+    if (file === null) {
+      alert("No file uploaded!");
+      return;
+    }
+  
     const formData = new FormData();
     formData.append("title", title);
-    formData.append("file", file);
     formData.append("userId", userId.userId);
-    // console.log("1",title, file);
+    console.log("userID",userId)
+    console.log(file);
+  
+    try {
+      // Generate a unique identifier for the file (e.g., using Date.now())
+      const uniqueIdentifier = Date.now();
+      const name = `${uniqueIdentifier}-${file.name}`;
+      console.log("frontend name",name);
 
-    const { data } = await axios.post(url + "/uploadPdf", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
-    // console.log("2. after file uploading",data);
-    
-    if (data.status === 200) {
-      alert("Uploaded Successfully!!!");
-      getPdfs();
-      showPdf(data.filename)
+      const storageRef = firebase.storage().ref();
+      const fileRef = storageRef.child(name);
+  
+      const snapshot = await fileRef.put(file);
+      const downloadURL = await snapshot.ref.getDownloadURL();
+
+      console.log("downloadURL",downloadURL)
+  
+      formData.append("name",name);
+      formData.append("downloadURL", downloadURL);
+  
+      // Make the axios post request
+      const { data } = await axios.post(url + "/uploadPdf", formData,{
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      });
+      console.log(data);
+  
+      if (data.status === 200) {
+        alert("Uploaded Successfully!!!");
+        getPdfs();
+        showPdf(data.downloadURL);
+      }
+    } catch (error) {
+      console.error("Error uploading PDF:", error);
     }
   };
+  
+  
 
-  const showPdf = (pdf) => {
+
+  const showPdf = (downloadURL) => { //downloadURL
     setSelecNums([]);
     console.log("ssss",selecNums)
-    setOpenPdf(url+`/files/${pdf}`);
+    setOpenPdf(downloadURL); //setOpenPdf(downloadURL)
   };
 
   const handleExtract = async () => {
@@ -96,11 +132,6 @@ export const UploadPdf = () => {
       const pdfSrcDoc = await PDFDocument.load(pdfArrayBuffer.data);
       const pdfNewDoc = await PDFDocument.create();
       const pagesToExtract = selecNums.map((pageNum) => pageNum - 1); // Adjust for 0-based indexing
-      
-      // const lastPage = pdfSrcDoc.getPageCount() - 1;
-      // if (!pagesToExtract.includes(lastPage)) {
-      //   pagesToExtract.push(lastPage);
-      // }
 
       const pages = await pdfNewDoc.copyPages(pdfSrcDoc, pagesToExtract);
       pages.forEach((page) => pdfNewDoc.addPage(page));
@@ -132,7 +163,7 @@ export const UploadPdf = () => {
           accept="application/pdf"
           required
           onChange={(e) => setFile(e.target.files[0])}
-          style={{ border: "2px solid" }}
+          style={{ "border": "2px solid black" }}
         />
         <br />
         <button type="submit">Submit</button>
@@ -142,9 +173,10 @@ export const UploadPdf = () => {
           ? ""
           : pdfFiles.map((item) => {
               return (
-                <div key={item.filename} className="pdfInfo">
+                // item.name
+                <div key={item.name} className="pdfInfo"> 
                   <h3>{item.title}</h3>
-                  <button onClick={() => showPdf(item.filename)}>
+                  <button onClick={() => showPdf(item.downloadURL)}>
                     Show Pdf
                   </button>
                 </div>

@@ -6,6 +6,7 @@ import "./Register.css"
 export const Register=()=> {
   const navigate = useNavigate();
   const url = "https://extractpdfpages.onrender.com";
+  // const url = "http://localhost:8000";
   const handleSubmit = async (e)=>{
     try {
       e.preventDefault();
@@ -59,7 +60,7 @@ export const Register=()=> {
           }}
           ></input> 
 
-          <input type='password' name='confirmPassword' placeholder='conform Password' id='confirmPassword'
+          <input type='password' name='confirmPassword' placeholder='confirm Password' id='confirmPassword'
           style={{
             "border-radius": "0.3rem",
           }}
