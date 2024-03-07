@@ -36,8 +36,8 @@ export const UploadPdf = () => {
 
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
-  const [pdfFiles, setPdfFiles] = useState(null);
-  const [openPdf, setOpenPdf] = useState("");
+  const [pdfFiles, setPdfFiles] = useState(null); //stores URLs of pdfs uploaded by user
+  const [openPdf, setOpenPdf] = useState(""); //stores URL of pdf to be opened
   const [numPages, setNumPages] = useState(0);
   const [selecNums, setSelecNums] = useState([]);
 
@@ -45,16 +45,18 @@ export const UploadPdf = () => {
     getPdfs();
   }, []);
 
+  //to get all pdf files already uploaded by user
   const getPdfs = async () => {
     try {
-      const { data } = await axios.post(url + "/pdfList", userId);
+      const { data } = await axios.post(url + "/pdfList", userId); 
       // console.log("3.in getPdfs",data.files);
       setPdfFiles(data.files);
     } catch (err) {
       console.log(err);
     }
   };
-
+  
+  //to upload pdf into firebase and then sending file data to backend
   const submitPdf = async (e) => {
     e.preventDefault();
   
@@ -106,13 +108,14 @@ export const UploadPdf = () => {
   
   
 
-
+  // used to show pdf
   const showPdf = (downloadURL) => { //downloadURL
     setSelecNums([]);
     // console.log("ssss",selecNums)
     setOpenPdf(downloadURL); //setOpenPdf(downloadURL)
   };
 
+  //to extract pdf pages which selected by user
   const handleExtract = async () => {
     try {
       const newPdf = await extractSelectedPages();

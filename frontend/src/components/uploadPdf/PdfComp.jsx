@@ -5,11 +5,13 @@ export const PdfComp= (props)=> {
   const [numPages, setNumPages] = useState(0);
   const [selecNums, setSelecNums] = useState([]);
 
+  //to calculate total page numbers as we need show by iterating each page
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
     props.pdfPages(numPages);
   }
 
+  //to store selected pages 
   const handleCheckboxChange = (pageNumber) => {
     if (selecNums.includes(pageNumber)) {
       setSelecNums((prevSelecNums) =>
