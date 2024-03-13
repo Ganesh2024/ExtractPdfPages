@@ -56,7 +56,7 @@ export const UploadPdf = () => {
     }
   };
   
-  //to upload pdf into firebase and then sending file data to backend
+  //to upload pdf into firebase and then sending file data,userId to backend 
   const submitPdf = async (e) => {
     e.preventDefault();
   
@@ -72,29 +72,27 @@ export const UploadPdf = () => {
     // console.log(file);
   
     try {
-      // Generate a unique identifier for the file (e.g., using Date.now())
+      // Generate a unique identifier for the file (e.g., using Date.now()) to manage duplicate pdfs
       const uniqueIdentifier = Date.now();
       const name = `${uniqueIdentifier}-${file.name}`;
-      // console.log("frontend name",name);
 
+      //storing uploaded file in firebase and retriving pdf url from it to access it
       const storageRef = firebase.storage().ref();
       const fileRef = storageRef.child(name);
   
       const snapshot = await fileRef.put(file);
       const downloadURL = await snapshot.ref.getDownloadURL();
 
-      // console.log("downloadURL",downloadURL)
   
       formData.append("name",name);
       formData.append("downloadURL", downloadURL);
   
-      // Make the axios post request
+       // Make the axios post request
       const { data } = await axios.post(url + "/uploadPdf", formData,{
         headers: {
           "Content-Type": "multipart/form-data",
         }
       });
-      // console.log(data);
   
       if (data.status === 200) {
         alert("Uploaded Successfully!!!");
@@ -108,14 +106,13 @@ export const UploadPdf = () => {
   
   
 
-  // used to show pdf
-  const showPdf = (downloadURL) => { //downloadURL
+   //changes pdf url stored in state variable using which i am showing pdf to user
+  const showPdf = (downloadURL) => { 
     setSelecNums([]);
-    // console.log("ssss",selecNums)
     setOpenPdf(downloadURL); //setOpenPdf(downloadURL)
   };
 
-  //to extract pdf pages which selected by user
+  //to extract pdf pages which selected by user and loads it in new tab
   const handleExtract = async () => {
     try {
       const newPdf = await extractSelectedPages();
